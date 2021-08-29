@@ -33,13 +33,14 @@ class MLPCell // Neuron
 class MLP
 {
 		vector<MLPCell> hiddenLayer;  // hidden layer
+		vector<MLPCell> hiddenLayer2; // hidden layer2
 		vector<MLPCell> outputLayer;  // output layer
 		double myThreshold;  // value which classify certainty
 		double Step(double value) {if(value<myThreshold) return 0.0; else return 1.0;}
 	public:
 		vector<double> input;  // vector of input
 		vector<double> output;  // vector of output
-		MLP(int inputNum,int hiddenNum,int outputNum,double threshold);  
+		MLP(int inputNum,int hiddenNum, int hiddenNum2,int outputNum,double threshold);  
 		void Testing();
 		bool Training(double trainingInput[], double trainingOutput[]);	
 		void SaveWeight(string FileName);                                 //Assignment1
@@ -81,9 +82,10 @@ void MLPCell::AdjustWeight(double lr){
 
 //=================== MLP ========================
 
-MLP::MLP(int inputNum,int hiddenNum,int outputNum,double threshold){
+MLP::MLP(int inputNum,int hiddenNum, int hiddenNum2, int outputNum,double threshold){
 	hiddenLayer.resize(hiddenNum,MLPCell(inputNum));
-	outputLayer.resize(outputNum,MLPCell(hiddenNum));
+	hiddenLayer2.resize(hiddenNum2,MLPCell(hiddenNum));
+	outputLayer.resize(outputNum,MLPCell(hiddenNum2));
 	input.resize(inputNum);
 	output.resize(outputNum);
 	myThreshold = threshold;
@@ -91,9 +93,9 @@ MLP::MLP(int inputNum,int hiddenNum,int outputNum,double threshold){
 
 
 bool MLP::Training(double trainingInput[], double trainingOutput[]){
-	cout << sizeof(double);
-	// if (sizeof(trainingInput)/sizeof(double) != input.size() || 
-	//     sizeof(trainingOutput)/sizeof(double) != output.size()) {
+	// cout << *(&trainingInput + 1) - trainingInput;
+	// if (sizeof(trainingInput)/sizeof(trainingInput[0]) != input.size() || 
+	//     sizeof(trainingOutput)/sizeof(trainingOutput[0]) != output.size()) {
 	//     	cout << "Training data range not match!!" << endl;
 	//     	return false;
 	// } 
@@ -109,10 +111,17 @@ bool MLP::Training(double trainingInput[], double trainingOutput[]){
 			outputLayer[i].BackPropagate(trainingOutput[i]-outputLayer[i].output);
 			outputLayer[i].AdjustWeight(0.01);			
 		}
-		for(int i=0;i<hiddenLayer.size();i++){
+		for(int i=0;i<hiddenLayer2.size();i++){
 			double sumInerr=0;
 			for(int j=0;j<outputLayer.size();j++)
 				sumInerr+=outputLayer[j].inerr[i];
+			hiddenLayer2[i].BackPropagate(sumInerr);	
+			hiddenLayer2[i].AdjustWeight(0.01);
+		}	
+		for(int i=0;i<hiddenLayer.size();i++){
+			double sumInerr=0;
+			for(int j=0;j<hiddenLayer2.size();j++)
+				sumInerr+=hiddenLayer2[j].inerr[i];
 			hiddenLayer[i].BackPropagate(sumInerr);	
 			hiddenLayer[i].AdjustWeight(0.01);
 		}	
@@ -127,10 +136,17 @@ void MLP::Testing(){
 			hiddenLayer[i].input[j]=input[j];	
 		hiddenLayer[i].FeedForward();	
 	}
+	// -------------- testing hedden layer 2 -------------------
+	for (int i=0;i<hiddenLayer2.size();i++){
+		for(int j=0;j<hiddenLayer.size();j++) 
+			hiddenLayer2[i].input[j]=hiddenLayer[j].output;	
+		hiddenLayer2[i].FeedForward();	
+		// output[i] = Step(outputLayer[i].output);
+	}
 	//--------------- testing output layer -------------------
 	for (int i=0;i<outputLayer.size();i++){
-		for(int j=0;j<hiddenLayer.size();j++) 
-			outputLayer[i].input[j]=hiddenLayer[j].output;	
+		for(int j=0;j<hiddenLayer2.size();j++) 
+			outputLayer[i].input[j]=hiddenLayer2[j].output;	
 		outputLayer[i].FeedForward();	
 		output[i] = Step(outputLayer[i].output);
 	}
@@ -145,6 +161,11 @@ void MLP::SaveWeight(string FileName) {
 	for (int i=0;i<hiddenLayer.size();i++){
 		for(int j=0;j<hiddenLayer[i].weight.size();j++) 
 			saveFile << hiddenLayer[i].weight[j] << " ";
+		saveFile << endl;
+	}
+	for (int i=0;i<hiddenLayer2.size();i++){
+		for(int j=0;j<hiddenLayer2[i].weight.size();j++) 
+			saveFile << hiddenLayer2[i].weight[j] << " ";
 		saveFile << endl;
 	}
 	for (int i=0;i<outputLayer.size();i++){
