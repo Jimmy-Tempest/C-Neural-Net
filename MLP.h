@@ -202,6 +202,7 @@ void MLP::SaveWeight(string FileName) {
 	// 	saveFile << endl;
 	// }
 	for (int it = 0; it<hiddenLayer.size();it++){
+		saveFile << "=== hidden ===" << endl;
 		for (int i=0;i<hiddenLayer[it].size();i++){
 			for(int j=0;j<hiddenLayer[it].size();j++) 
 				saveFile << hiddenLayer[it][i].weight[j] << " ";
@@ -209,6 +210,7 @@ void MLP::SaveWeight(string FileName) {
 			// output[i] = Step(outputLayer[i].output);
 		}
 	}
+	saveFile << "=== output ===" << endl;
 	for (int i=0;i<outputLayer.size();i++){
 		for(int j=0;j<outputLayer[i].weight.size();j++) 
 			saveFile << outputLayer[i].weight[j] << " ";
@@ -229,8 +231,11 @@ void MLP::LoadWeight(string FileName){
 	ifstream saveFile(FileName);
 	
 	getline (saveFile, line);
-	if (line != "=== MLP Weight ===") cout << "This is not a Weight";
+	if (line != "=== MLP Weight ===") cout << "This is not a Weight File";
 	for (int it = 0; it<hiddenLayer.size();it++){
+		getline (saveFile, line);
+		string validate = "=== hidden ===";
+		if (line != validate) cout << "Weight shape do not match";
 		for (int i=0;i<hiddenLayer[it].size();i++){
 			getline (saveFile, line);
 			size_t pos = 0;
@@ -249,6 +254,9 @@ void MLP::LoadWeight(string FileName){
 				}
 		}
 	}
+	getline (saveFile, line);
+	string validate = "=== output ===";
+	if (line != validate) cout << "Weight shape do not match";
 	for (int i=0;i<outputLayer.size();i++){
 		getline (saveFile, line);
 		size_t pos = 0;

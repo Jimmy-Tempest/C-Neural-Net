@@ -13,14 +13,13 @@ int hiddenSize[4] = {4,4,2,2};
 #include "./TrainingData.cpp"
 	MLP *model = new MLP(4, 4, hiddenSize, 2, 0.5);
     for (int i=0;i<numTrainingSets;i++){
-		data = model->Training(training_inputs[0], training_outputs[0]);
+		data = model->Training(training_inputs[i], training_outputs[i]);
     	// for (int j=0;j<numInputs;j++)
     	// 	cout << training_inputs[i][j] << endl;
 	}
-	if(data)
 	model->SaveWeight("savedWeight.txt");
 	model->LoadWeight("savedWeight.txt");
-	// model->SaveWeight("loadedSavedWeight.txt");
+	model->SaveWeight("loadedSavedWeight.txt");
 	
 	return 0;
 }
